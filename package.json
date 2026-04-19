@@ -1,0 +1,8 @@
+{
+  "name": "reddit-bot",
+  "version": "1.0.0",
+  "description": "Automated Reddit promotion bot for Whisprr",
+  "main": "scripts/post-reddit.js",
+  "scripts": { "start": "node scripts/post-reddit.js" },
+  "dependencies": { "playwright": "^1.42.0" }
+}

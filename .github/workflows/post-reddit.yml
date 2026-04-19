@@ -1,0 +1,42 @@
+name: Reddit Bot
+
+on:
+  schedule:
+    - cron: '45 * * * *'
+  workflow_dispatch:
+    inputs:
+      action:        { description: 'comment | upvote | post', required: false, default: 'comment' }
+      subreddit:     { description: 'Subreddit (no r/)', required: false }
+      keyword:       { description: 'Search keyword', required: false }
+      comment_text:  { description: 'Comment text', required: false }
+      post_title:    { description: 'Post title', required: false }
+      post_body:     { description: 'Post body', required: false }
+  repository_dispatch:
+    types: [reddit-action]
+
+jobs:
+  reddit-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ACTION:       ${{ github.event.client_payload.action       || github.event.inputs.action       || 'comment' }}
+      SUBREDDIT:    ${{ github.event.client_payload.subreddit    || github.event.inputs.subreddit    || '' }}
+      KEYWORD:      ${{ github.event.client_payload.keyword      || github.event.inputs.keyword      || '' }}
+      COMMENT_TEXT: ${{ github.event.client_payload.comment_text || github.event.inputs.comment_text || '' }}
+      POST_TITLE:   ${{ github.event.client_payload.post_title   || github.event.inputs.post_title   || '' }}
+      POST_BODY:    ${{ github.event.client_payload.post_body    || github.event.inputs.post_body    || '' }}
+      REDDIT_COOKIES:   ${{ secrets.REDDIT_COOKIES }}
+      REDDIT_COOKIES_2: ${{ secrets.REDDIT_COOKIES_2 }}
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify Chrome
+        run: google-chrome-stable --version || google-chrome --version
+      - name: Run Reddit bot
+        run: node scripts/post-reddit.js
